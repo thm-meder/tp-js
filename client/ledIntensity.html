@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<!-- saved from url=(0060)https://getbootstrap.com/docs/3.3/examples/navbar-fixed-top/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <head>
+        
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+        <meta name="description" content="">
+        <meta name="author" content="">
+        <link rel="icon" href="https://getbootstrap.com/docs/3.3/favicon.ico">
+
+        <title>Photon Manager</title>
+
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
+        <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+
+        <!-- Bootstrap core CSS -->
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+        <!-- Custom styles for this template -->
+        <link href="/css/navbar-fixed-top.css" rel="stylesheet">
+
+        
+    
+    </head>
+
+    <body>
+
+        <!-- Fixed navbar -->
+        <nav class="navbar navbar-default navbar-fixed-top">
+            <div class="container">
+                  <div class="navbar-header">
+                      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+                          <span class="sr-only">Toggle navigation</span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                          <span class="icon-bar"></span>
+                      </button>
+
+                      <a class="navbar-brand" href="/">Photon Manager</a>
+                  </div>
+                  <div id="navbar" class="navbar-collapse collapse">
+                      <ul class="nav navbar-nav">
+                          <li><a class="deviceId"></a></li>
+                          <li><a class="deviceName"></a></li>
+                          <li><a class="returnPM">return to Photon Manager</a></li>
+                      </ul>
+                  </div><!--/.nav-collapse -->
+                  
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row">
+
+                <div class="col-md-12 device">
+                  
+                    <h2>Intensity</h2>
+
+                    <div id="chartContainer" style="height: 370px; width: 100%;"></div>
+
+
+                </div>
+                
+            </div> <!-- row -->
+
+        </div> <!-- /container -->
+
+
+        <!-- Bootstrap core JavaScript
+        ================================================== -->
+        <!-- Placed at the end of the document so the pages load faster -->
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+
+        <script type="text/javascript">
+
+          $(document).ready(function(){
+
+              list = window.location.pathname.split('/');
+              id = list[list.length - 1];
+              console.log(id);
+              $('a.returnPM').attr( 'href', 'http://localhost:3000/display/device/' + id );
+
+          });
+
+        </script>
+
+        <script type="text/javascript">
+
+            $(document).ready(function(){
+
+                $.getJSON( "http://localhost:3000/devices/unique/" + id, function( data ) {
+                    device = data;
+                    $('a.deviceId').html( 'id : ' + data.id )
+                    $('a.deviceName').html( 'name : ' + data.name )
+      
+                });
+            });
+
+        </script>
+
+        <script type="text/javascript">
+
+            $(document).ready(function(){
+
+                var socket = io.connect('http://localhost:3000');
+                socket.on("ledIntensityEmit", function(socket) {
+
+                    // console.log(device.name);
+                    console.log(socket);
+
+                    var intensity = parseInt(socket.data);
+                    var name = device.name;
+                    //return false;
+
+                    
+
+                    var chart = new CanvasJS.Chart("chartContainer", {
+                        animationEnabled: true,
+                        theme: "light2", // "light1", "light2", "dark1", "dark2"
+                        
+                        axisY: {
+                            title: "Intensity"
+                        },
+                        data: [{        
+                            type: "column",  
+                            showInLegend: true, 
+                            legendMarkerColor: "grey",
+                            legendText: "Value",
+                            dataPoints: [      
+                                { y: intensity , label: name } 
+                            ]
+                        }]
+                    });
+                    chart.render();
+                });
+                
+            });
+            
+        </script>
+        
+    </body>
+</html>

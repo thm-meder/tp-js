@@ -1,0 +1,9 @@
+.eleve{
+	color:red;
+}
+.display{
+	visibility: hidden;
+}
+.display.show{
+	visibility: visible;
+}

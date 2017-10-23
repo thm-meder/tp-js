@@ -1,0 +1,47 @@
+body{
+  background-color: lightblue;
+}
+
+#table{
+  width:20%;
+  height:40%;
+  background-color: lightgrey;
+  text-align:justify;
+  padding-left:5px;
+  padding-top:10px;
+}
+
+
+#description{
+  position: absolute;
+  width:60%;
+  height:60%;
+  margin-left: 25%;
+  bottom: 33%;
+  text-align:justify;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+#form{
+  display : none;
+  position: absolute;
+  width:60%;
+  height:60%;
+  margin-left: 25%;
+  bottom: 33%;
+  text-align:justify;
+  padding-left: 5px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+}
+
+
+.display{
+	visibility: hidden;
+}
+
+.display.show{
+	visibility: visible;
+}

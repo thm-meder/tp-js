@@ -3,11 +3,10 @@ var mongoose = require('mongoose');
 var userSchema = mongoose.Schema({
     "nom": String,
     "prenom": String,
-    "mail": String,
-    "id_particle": String,
-    "createdAt" : Date
+    "contact_mail": String,
+    "id_particle": String
 });
-// je crée un model et j'attache le schema ci dessus
-var User = mongoose.model('User', userSchema);
+
+var User = mongoose.model('users', userSchema);
 
 module.exports = User;
