@@ -7,6 +7,6 @@ var userSchema = mongoose.Schema({
     "id_particle": String
 });
 
-var User = mongoose.model('users', userSchema);
+var User = mongoose.model('user', userSchema);
 
 module.exports = User;

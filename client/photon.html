@@ -1,9 +1,9 @@
 <!DOCTYPE html>
 <!-- saved from url=(0060)https://getbootstrap.com/docs/3.3/examples/navbar-fixed-top/ -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    
+
     <head>
-        
+
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
@@ -15,12 +15,13 @@
 
         <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.3/socket.io.js"></script>
         <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.bundle.js"></script>
 
         <!-- Bootstrap core CSS -->
         <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
         <!-- Custom styles for this template -->
         <link href="/css/navbar-fixed-top.css" rel="stylesheet">
-    
+
     </head>
 
     <body>
@@ -42,10 +43,10 @@
                       <ul class="nav navbar-nav">
                           <li><a class="deviceId"></a></li>
                           <li><a class="deviceName"></a></li>
-                          <li><a href="photon.html" class="viewPRGraph">View photon's list</a></li>
+                          <li><a href="/photon">View Photon's list</a></li>
                       </ul>
                   </div><!--/.nav-collapse -->
-                  
+
             </div>
         </nav>
 
@@ -53,15 +54,16 @@
             <div class="row">
 
                 <div class="col-md-8 device">
-                  
+
                     <h2>Events</h2>
 
-                    <ul class="photon-list list-group"></ul>
+                    <canvas id="myChart" width="800" height="450"></canvas>
+                    <ul id="liste"></ul>
 
                 </div>
 
                 <div class="col-md-4">
-                    
+
                     <h2>LED Manager</h2>
 
                     <form action="https://api.particle.io/v1/devices/1e0024001047343438323536/led?access_token=757c798807bf560c9a8dda12a668ec41125221fd" method="POST">
@@ -70,20 +72,20 @@
                                 <label><input type="radio" name="args" value="on" checked>Turn the LED on.</label>
                             </div>
                         </div>
-                        
+
                         <div class="form-group">
                             <div class="radio">
                                 <label><input type="radio" name="args" value="off">Turn the LED off.</label>
                             </div>
                         </div>
                         <input type="submit" class="btn btn-info" value="Do it!">
-                        
-                            
+
+
                     </form>
 
                 </div>
 
-                
+
             </div> <!-- row -->
 
         </div> <!-- /container -->
@@ -117,7 +119,7 @@
 
                     $('a.deviceId').html( 'id : ' + data.id )
                     $('a.deviceName').html( 'name : ' + data.name )
-      
+
                 });
             });
 
@@ -134,12 +136,65 @@
                     var dateTime = new Date(socket.published_at);
                     console.log(dateTime);
 
-                    $('.photon-list').prepend( '<li class="list-group-item"> data : ' + socket.data + ', name : ' + socket.name + ', published at : ' + dateTime + '</li>' );  
+                    $('.photon-list').prepend( '<li class="list-group-item"> data : ' + socket.data + ', name : ' + socket.name + ', published at : ' + dateTime + '</li>' );
                 });
-                
+
             });
-            
+
         </script>
-        
+
+        <script type="text/javascript">
+          var tableX = [];
+          var tableY = [];
+          var socket = io.connect('http://localhost:3000');
+          socket.on("monsocket", function(socket) {
+              console.log(socket);
+              var ul =  document.getElementById("liste");
+              var li = document.createElement('li');
+              li.innerHTML = socket;
+              ul.appendChild(li);
+          tableY.push(JSON.parse(socket).data);
+          tableX.push(JSON.parse(socket).published_at);
+          // Chart.js
+              var ctx = document.getElementById("myChart").getContext('2d');
+              var myChart = new Chart(ctx, {
+                  type: 'line',
+                  data: {
+                      labels: tableX,
+                      datasets: [{
+                          label: 'Valeurs de la photoresistance',
+                          data: tableY,
+                          backgroundColor: [
+                              'rgba(255, 99, 132, 0.2)',
+                              'rgba(54, 162, 235, 0.2)',
+                              'rgba(255, 206, 86, 0.2)',
+                              'rgba(75, 192, 192, 0.2)',
+                              'rgba(153, 102, 255, 0.2)',
+                              'rgba(255, 159, 64, 0.2)'
+                          ],
+                          borderColor: [
+                              'rgba(255,99,132,1)',
+                              'rgba(54, 162, 235, 1)',
+                              'rgba(255, 206, 86, 1)',
+                              'rgba(75, 192, 192, 1)',
+                              'rgba(153, 102, 255, 1)',
+                              'rgba(255, 159, 64, 1)'
+                          ],
+                          borderWidth: 1
+                      }]
+                  },
+                  options: {
+                      scales: {
+                          yAxes: [{
+                              ticks: {
+                                  beginAtZero: true
+                              }
+                          }]
+                      }
+                  }
+          });
+        });
+        </script>
+
     </body>
 </html>

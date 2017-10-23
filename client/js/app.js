@@ -1,10 +1,12 @@
 
+
 var data = [];
 var newO = {};
 var editMode = {
     edit: false,
     editId: undefined
 };
+
 
 var marequete = new XMLHttpRequest();
 marequete.open('GET', "http://localhost:3000/api/liste", true);
@@ -19,6 +21,7 @@ function processRequest(event) {
     if (marequete.readyState == 4 && marequete.status == 200) {
         var mareponseText = marequete.responseText;
         mareponseText = JSON.parse(mareponseText);
+
         data = mareponseText;
         data.forEach(function(user) {
             bindList(user);
@@ -28,12 +31,15 @@ function processRequest(event) {
 
 }
 
+
 var monUl = document.createElement("ul");
 monUl.classList.add("list-group")
 var monWrap = document.getElementById("wrap");
 
 monWrap.appendChild(monUl);
 
+
+// Toggle Click for form
 var monBtn = document.getElementById("addNew");
 monBtn.addEventListener("click", function(event) {
     document.getElementById("myForm").classList.toggle("show");
@@ -50,12 +56,13 @@ function bindList(user) {
     addBtnProfile(monLi);
     addBtnDelete(monLi);
     addBtnEdit(monLi);
+  //  addBtnAdd(monLi);
+
 
     monUl.appendChild(monLi);
 }
 
 
-// add buttons
 function addBtnProfile(elem) {
     var btnProfile = document.createElement("span");
     btnProfile.classList.add("badge")
@@ -80,9 +87,17 @@ function addBtnEdit(elem) {
     elem.appendChild(deleteEdit);
 }
 
+// function addBtnAdd(elem) {
+//     var btnAdd = document.createElement("span");
+//     btnAdd.classList.add("badge")
+//     btnAdd.innerHTML = "<span class='glyphicon glyphicon-plus' aria-hidden='true'></span>";
+//     btnAdd.addEventListener("click", addPhoton);
+//     elem.appendChild(btnAdd);
+// }
 
 
-// click detection
+
+// Event listener : click
 function detectClick(event) {
     event.preventDefault();
     console.log(event);
@@ -92,7 +107,7 @@ function detectClick(event) {
     var userId = myTarget.getAttribute("data-idUser");
     console.log(userId);
 
-    window.location = "./profil" + '#' + myTarget.getAttribute("data-idUser");
+  //  window.location = "./profil" + '#' + myTarget.getAttribute("data-idUser");
 }
 
 
@@ -133,6 +148,7 @@ function submitForm(event) {
             }
         }
     }
+
     else if (editMode.edit === true) {
         console.log("je suis en edition");
         console.log(editMode);
@@ -161,7 +177,7 @@ function submitForm(event) {
 
 };
 
-// delete
+// Delete User
 function deleteUser(event) {
     event.preventDefault();
     console.log("delete");
@@ -178,6 +194,7 @@ function deleteUser(event) {
 
     var deleteUser = new XMLHttpRequest();
     deleteUser.open('POST', "http://localhost:3000/api/delete", true);
+
     deleteUser.setRequestHeader("Content-type", "application/json");
 
     deleteUser.send(JSON.stringify(idObj));
@@ -192,7 +209,7 @@ function deleteUser(event) {
 
 };
 
-// edit
+// Edit user
 function editUser(event) {
     console.log("edit");
 
@@ -209,8 +226,31 @@ function editUser(event) {
     var monForm = document.getElementById("newUser").elements;
     _.forIn(monForm, function(item) {
         item.value = objUser[item.name];
+
     });
 
+
+};
+
+// Add Photon to user
+function addPhoton(event) {
+    console.log("edit");
+
+    document.getElementById("myForm").classList.toggle("show");
+    var myTarget = event.target.parentNode.parentNode;
+    console.log(myTarget);
+    var objUser = myTarget.getAttribute("data-objUser");
+    editMode.edit = true;
+    editMode.editId = myTarget.getAttribute("data-idUser");
+
+    console.log(objUser);
+    objUser = JSON.parse(objUser);
+    console.log(objUser._id);
+    var monForm = document.getElementById("newUser").elements;
+    _.forIn(monForm, function(item) {
+        item.value = objUser[item.name];
+
+    });
 
 
 };

@@ -7,7 +7,7 @@ var User = require('./models/user.js');
 
 var app = express();
 
-var Particles = require('./models/particle.js');
+var Devices = require('./models/devices.js');
 var EventObj = require('./models/eventsObj.js');
 
 var resistorRead = require('./models/resistorRead.js');
@@ -18,27 +18,33 @@ var io = require('socket.io')(server);
 
 var particle = new Particle();
 
-// Device Photon
 var token;
 var myDevice = '3f0032001147353138383138';
 
-// Instance connexion Mongo (users)
-var promise = mongoose.connect('mongodb://localhost:27017/ifa', {
+
+
+
+// Mongo Connexion (User)
+var promise = mongoose.connect('mongodb://thm-meder:pass1111@ds127375.mlab.com:27375/users', {
     useMongoClient: true,
 });
 
-// Instance connexion Mongo (particle Photon)
-var promise2 = mongoose.connect('mongodb://localhost:27017/ifaParticle', {
+// Mongo Connexion (Photon)
+var promise2 = mongoose.connect('mongodb://thm-meder:pass1111@ds227045.mlab.com:27045/photon', {
     useMongoClient: true
 });
 
-// Quand connexion réussie
 promise.then(
     () => {
-                console.log('db.connected');
-                app.listen(3000, function() {
-                    console.log('listening on 3000 and database is connected');
+
+            console.log('db.connected');
+            app.listen(3000, function() {
+                console.log('listening on 3000 and database is connected');
+                io.sockets.on('connection', function (socket) {
+                	    	console.log("Someone is connected");
+                	    	socket.emit('monsocket2', { hello: "world" });
                 });
+            });
 
     },
     err => {
@@ -53,35 +59,26 @@ promise.then(
 app.use(bodyParser.urlencoded({
     extended: true
 }));
-
 app.use(bodyParser.json());
-
 app.set('views', './views');
-
 app.set('view engine', 'jade');
-
 
 app.use('/js', express.static('./client/js'));
 app.use('/css', express.static('./client/css'));
 
 
-//Actions
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html')
-});
-app.get('/profil', function(req, res) {
-    res.sendFile(__dirname + '/client/profil.html')
 });
 
 app.get('/photon', function(req, res) {
     res.sendFile(__dirname + '/client/index_photon.html');
 });
 
-//Display device by Id
-app.get('/display/photon/:id', function(req, res) {
-    Photons.findOne({'id':req.params.id},function(err,objet){
+
+app.get('/display/device/:id', function(req, res) {
+    Devices.findOne({'id':req.params.id},function(err,objet){
         if(err){
-            //res.send('Find Error' + err);
             console.log('Find Error' + err);
         }
         else {
@@ -91,22 +88,8 @@ app.get('/display/photon/:id', function(req, res) {
     });
 });
 
-app.get('/viewPhotonGraph/photon/:id', function(req, res) {
-    Photons.findOne({'id':req.params.id},function(err,objet){
-        if(err){
-            console.log('Find Error' + err);
-        }
-        else {
-            res.cookie('data', JSON.stringify(req.params.id));
-            res.sendFile(__dirname + '/client/ledIntensity.html', { id: req.params.id });
-        }
-    });
-});
-
-// API :
-// send user list
 app.get('/api/liste', function(req, res) {
-    User.find({}, function(err, collection) {
+    user.find({}, function(err, collection) {
         if (err) {
             console.log(err);
             return res.send(500);
@@ -117,7 +100,6 @@ app.get('/api/liste', function(req, res) {
 
 });
 
-// get user by id
 app.get('/api/liste/:id', function(req, res) {
     console.log(req.params);
     console.log(req.params.id);
@@ -136,11 +118,10 @@ app.get('/api/liste/:id', function(req, res) {
 
 });
 
-// Post requests
 app.post('/new', function(req, res) {
     console.log(req.body);
     console.log("my name is " + req.body.nom);
-    var userToSave = new user(req.body);
+    var userToSave = new User(req.body);
 
     userToSave.save(function(err, success){
             if(err){
@@ -154,7 +135,7 @@ app.post('/new', function(req, res) {
         });
 
 });
-// gère la suppression
+
 app.delete('/api/liste/:id', function(req, res) {
     console.log(req.body);
     User.findByIdAndRemove(req.params.id,function(err, response){
@@ -169,9 +150,9 @@ app.delete('/api/liste/:id', function(req, res) {
         }
     });
 
+
 });
 
-// exemple de rendu html / jade
 app.put('/api/liste/:id', function(req, res) {
     console.log(req.params);
     console.log(req.body);
@@ -186,31 +167,15 @@ app.put('/api/liste/:id', function(req, res) {
 });
 
 
-// gère les requetes post
-app.post('/quotes', function(req, res) {
-    console.log(req.body);
-    console.log("my name is " + req.body.nom);
-    var newUser = {
-        nom: req.body.nom,
-        prenom: req.body.prenom
-    };
-    res.send(200);
+// return Device parameters by id
 
-});
-
-
-// get device parameter/id
-
-app.get('/photons/unique/:id', function(req,res){
-    //res.send(req.params.id);
-    Photons.findOne({'id':req.params.id},function(err,objet){
+app.get('/devices/unique/:id', function(req,res){
+    Devices.findOne({'id':req.params.id},function(err,objet){
         if(err){
-            //res.send('Find Error' + err);
             console.log('Find Error' + err);
         }
         else {
             console.log('Objet : ' + objet);
-            //res.send(objet);
             return res.send(objet);
         }
     });
@@ -218,9 +183,9 @@ app.get('/photons/unique/:id', function(req,res){
 
 // return all devices
 
-app.get('/photon/list', function(req,res){
+app.get('/devices/list', function(req,res){
 
-    Photons.find(function(err, collection) {
+    Devices.find(function(err, collection) {
         if (err) {
             console.log(err);
             return res.send(500);
@@ -232,7 +197,7 @@ app.get('/photon/list', function(req,res){
 
 /*
 
-    Photon Particle
+    Particle
 
 */
 
@@ -240,21 +205,21 @@ particle.login({username:'thm.meder@gmail.com',password:'shyriku1105'}).then(
     function(data){
         token = data.body.access_token;
         console.log(token);
-        var photonsPr = particle.listPhotons({ auth: token });
-        photonsPr.then(
-            function(photons){
-              photons.body.forEach(function(photon){
-                Photons.findOne({"id":photon.id}, function(err,objet){
+        var devicesPr = particle.listDevices({ auth: token });
+        devicesPr.then(
+            function(devices){
+              devices.body.forEach(function(device){
+                Devices.findOne({"id":device.id}, function(err,objet){
                     if(objet) {
-                        console.log('Photon update in progress');
+                        console.log('device Update in progress');
                         var dateActu = new Date();
-                        var toUpdate = new Photons(objet);
+                        var toUpdate = new Devices(objet);
                         toUpdate.last_heard = dateActu.toISOString();
-                        Photons.findByIdAndUpdate(objet._id,toUpdate,{new:true}, function(err,objet){
+                        Devices.findByIdAndUpdate(objet._id,toUpdate,{new:true}, function(err,objet){
                             if(err){
                                 console.log('Update Error ' + err);
                             }else{
-                                console.log('Photon updated ');
+                                console.log('Device updated ');
                             }
                         });
 
@@ -263,8 +228,8 @@ particle.login({username:'thm.meder@gmail.com',password:'shyriku1105'}).then(
                         console.log('Error '+ err);
                     }
                     else {
-                        console.log('Photon addition in progress');
-                        var toSave = new Photons(photon);
+                        console.log('device Add in progress');
+                        var toSave = new Devices(device);
                         toSave.save(function(err,success){
                             if(err){
                                 console.log('Add Error '+ err);
@@ -278,29 +243,18 @@ particle.login({username:'thm.meder@gmail.com',password:'shyriku1105'}).then(
               });
             },
             function(err) {
-              console.log('Fail - Call list device : ', err);
+              console.log('List devices call failed: ', err);
             }
         );
-        particle.getEventStream({ deviceId: myDevice,name: 'beamStatus', auth: token }).then(function(stream) {
+        particle.getEventStream({
+            deviceId: myDevice,
+            auth: token
+        }).then(function(stream) {
             stream.on('event', function(data) {
-
-                io.emit('newEvent',data);
-
+                console.log("Event: " + JSON.stringify(data));
+                io.sockets.emit('monsocket', JSON.stringify(data));
             });
-        });
-        particle.getEventStream({ deviceId: myDevice,name: 'resistorReadValue', auth: token }).then(function(stream) {
-
-            // console.log(stream);
-
-            stream.on('event', function(data) {
-                console.log(data)
-                if( data.data > 40 ) {
-                        io.emit('ledIntensityEmit',data);
-                }
-
-
-            });
-        });
+      });
 
     },
     function(err){
